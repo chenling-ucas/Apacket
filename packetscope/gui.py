@@ -41,13 +41,12 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QHeaderView,
     QAbstractItemView,
-    QDialog,
     QMenu,
-    QDialogButtonBox,
 )
 from . import capture, workers
 from .session import Session, display_predicate
-from .views import StreamDialog, endpoint
+from .process_view import ProcessDialog
+from .views import StreamDialog
 
 DISPLAY = Qt.ItemDataRole.DisplayRole
 USER = Qt.ItemDataRole.UserRole
@@ -293,7 +292,13 @@ class Window(QMainWindow):
         bar.addWidget(self.count)
         bar.addStretch()
         self.proc_btn = button("按进程查看", self.process_list)
+        self.proc_btn.setToolTip(
+            "实时捕获匹配到本机进程后，可查看它的 TCP 连接和教学批注。"
+        )
         self.stream_btn = button("追踪 TCP 流", self.trace)
+        self.stream_btn.setToolTip(
+            "选中 TCP 包，查看这条连接的双向时序和逐帧教学批注。"
+        )
         bar.addWidget(self.proc_btn)
         bar.addWidget(self.stream_btn)
         top_l.addLayout(bar)
@@ -734,45 +739,16 @@ class Window(QMainWindow):
             return
         sid = self.model.s.analysis.meta[self.selected.number].stream
         if sid is not None:
-            StreamDialog(self.model.s, sid, self).exec()
+            dialog = StreamDialog(
+                self.model.s, sid, self, initial_frame=self.selected.number
+            )
+            dialog.exec()
+            dialog.deleteLater()
 
     def process_list(self):
-        s = self.model.s
-        dialog = QDialog(self)
-        dialog.resize(720, 420)
-        dialog.setWindowTitle("按进程查看 TCP 流")
-        layout = QVBoxLayout(dialog)
-        layout.addWidget(heading("实时观测到的本机进程与连接"))
-        tree = QTreeWidget()
-        tree.setHeaderLabels(["进程 / TCP 流", "本地端点", "对端"])
-        tree.setColumnWidth(0, 230)
-        tree.setColumnWidth(1, 190)
-        layout.addWidget(tree)
-        groups = {}
-        for sid, ownership in s.owners.items():
-            stream = s.analysis.streams[sid]
-            for ep, owner in ownership.items():
-                if owner not in groups:
-                    groups[owner] = QTreeWidgetItem(tree, [owner])
-                other = stream.right if ep == stream.left else stream.left
-                item = QTreeWidgetItem(
-                    groups[owner], [f"流 #{sid}", endpoint(ep), endpoint(other)]
-                )
-                item.setData(0, USER, sid)
-        tree.expandAll()
-
-        def open_item(item, col):
-            sid = item.data(0, USER)
-            if sid is not None:
-                StreamDialog(s, sid, dialog).exec()
-
-        tree.itemDoubleClicked.connect(open_item)
-        note = QLabel("双击连接可打开时序图。进程名称取自本机实时套接字快照。")
-        layout.addWidget(note)
-        close = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)
-        close.rejected.connect(dialog.close)
-        layout.addWidget(close)
+        dialog = ProcessDialog(self.model.s, self)
         dialog.exec()
+        dialog.deleteLater()
 
     def closeEvent(self, event):
         if self.mode in ("starting", "live", "stopping"):
