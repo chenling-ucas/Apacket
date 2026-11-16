@@ -201,17 +201,26 @@ class Window(QMainWindow):
         layout.addLayout(head)
         actions = QHBoxLayout()
         self.devices = QComboBox()
-        self.devices.setMinimumContentsLength(12)
+        self.devices.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToContents)
         self.devices.setToolTip("要监听的网络接口")
         try:
-            interfaces = capture.interfaces()
-            for dev in interfaces:
-                title = dev.name
-                if dev.name == "lo0":
-                    title += " · 本机回环"
-                elif dev.description:
-                    title += " · " + dev.description
+            priority = {"wi-fi": 0, "loopback": 1}
+            for dev in sorted(
+                capture.interfaces(),
+                key=lambda d: priority.get(d.description.casefold(), 2),
+            ):
+                title = (
+                    f"{dev.description}: {dev.name}"
+                    if dev.description and dev.description != dev.name
+                    else dev.name
+                )
                 self.devices.addItem(title, dev.name)
+                if dev.description == "Loopback":
+                    self.devices.setItemData(
+                        self.devices.count() - 1,
+                        "本机回环，用于观察 localhost 或 127.0.0.1 通信。",
+                        Qt.ItemDataRole.ToolTipRole,
+                    )
             found = self.devices.findData("lo0")
             if found >= 0:
                 self.devices.setCurrentIndex(found)

@@ -8,6 +8,7 @@ from functools import lru_cache
 from itertools import chain
 import os
 from pathlib import Path
+import subprocess
 import sys
 import tempfile
 from typing import Iterable, Iterator
@@ -102,8 +103,31 @@ def _message(raw: bytes | None) -> str:
     return (raw or b'unknown libpcap error').decode(errors='replace')
 
 
+def _mac_hardware_names() -> dict[str, str]:
+    try:
+        output = subprocess.run(
+            ['/usr/sbin/networksetup', '-listallhardwareports'],
+            stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, errors='replace',
+            env={**os.environ, 'LC_ALL': 'C'}, check=True, timeout=2,
+        ).stdout
+    except (OSError, subprocess.SubprocessError):
+        return {}
+    names = {}
+    label = ''
+    for line in output.splitlines():
+        if line.startswith('Hardware Port:'):
+            label = line.partition(':')[2].strip()
+        elif line.startswith('Device:') and label:
+            name = line.partition(':')[2].strip()
+            if name:
+                names[name] = label
+            label = ''
+    return names
+
+
 def interfaces() -> list[Interface]:
     lib = _library()
+    hardware = _mac_hardware_names() if sys.platform == 'darwin' else {}
     devices = _DevicePtr()
     error = C.create_string_buffer(256)
     if lib.pcap_findalldevs(C.byref(devices), error) < 0:
@@ -114,8 +138,11 @@ def interfaces() -> list[Interface]:
         while current:
             device = current.contents
             if device.name:
-                result.append(Interface(os.fsdecode(device.name),
-                                        (device.description or b'').decode(errors='replace')))
+                name = os.fsdecode(device.name)
+                description = hardware.get(name) or (device.description or b'').decode(errors='replace')
+                if not description and device.flags & 0x01:  # PCAP_IF_LOOPBACK
+                    description = 'Loopback'
+                result.append(Interface(name, description))
             current = device.next
     finally:
         lib.pcap_freealldevs(devices)
