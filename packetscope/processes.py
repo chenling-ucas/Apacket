@@ -1,9 +1,10 @@
-"""Live TCP socket ownership visible to the current user on macOS."""
+"""Read local TCP socket ownership from Windows IP Helper or POSIX lsof."""
 from __future__ import annotations
 
 import ipaddress
 import shutil
 import subprocess
+import sys
 
 from .analysis import Connection, Endpoint
 
@@ -20,7 +21,7 @@ def _endpoint(text: str) -> Endpoint | None:
     if isinstance(address, ipaddress.IPv6Address):
         if address.ipv4_mapped:
             address = address.ipv4_mapped
-        elif address.is_link_local:
+        elif sys.platform == 'darwin' and address.is_link_local:
             # Darwin lsof can embed the interface index in bits 16..31.
             packed = bytearray(address.packed)
             packed[2:4] = b'\x00\x00'
@@ -46,6 +47,10 @@ def _parse_lsof(output: str) -> dict[Connection, str]:
 
 def snapshot() -> dict[Connection, str]:
     """Map (local endpoint, remote endpoint) to observed process; call off the UI thread."""
+    if sys.platform == 'win32':
+        from .windows_processes import snapshot as windows_snapshot
+        return windows_snapshot()
+
     exe = shutil.which('lsof')
     if not exe:
         raise RuntimeError('系统缺少 lsof，无法采样 TCP 进程。')

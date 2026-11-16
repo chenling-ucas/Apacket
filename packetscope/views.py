@@ -56,7 +56,7 @@ class FlowDiagram(QGraphicsView):
         self.current_row = -1
         self.setObjectName("flowDiagram")
         self.setAccessibleName("TCP 双向时序图")
-        self.setToolTip("点击报文查看批注，上下键切换。")
+        self.setToolTip("点击箭头查看这一帧的作用，上下键切换。")
         self.viewport().setCursor(Qt.CursorShape.PointingHandCursor)
         self.setScene(QGraphicsScene(self))
         self.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)

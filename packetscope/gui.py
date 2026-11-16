@@ -293,11 +293,11 @@ class Window(QMainWindow):
         bar.addStretch()
         self.proc_btn = button("按进程查看", self.process_list)
         self.proc_btn.setToolTip(
-            "实时捕获匹配到本机进程后，可查看它的 TCP 连接和教学批注。"
+            "实时抓包识别出本机进程后，可查看它和谁通信、收发了哪些数据。"
         )
         self.stream_btn = button("追踪 TCP 流", self.trace)
         self.stream_btn.setToolTip(
-            "选中 TCP 包，查看这条连接的双向时序和逐帧教学批注。"
+            "选中 TCP 包，查看连接时序和每一帧的作用。"
         )
         bar.addWidget(self.proc_btn)
         bar.addWidget(self.stream_btn)
@@ -348,7 +348,13 @@ class Window(QMainWindow):
         self.split.addWidget(low)
         self.split.setSizes([390, 320])
         layout.addWidget(self.split, 1)
-        self.foot = QLabel("选择接口开始捕获，或打开 .pcap / .pcapng 文件。")
+        if self.devices.count():
+            startup_hint = "选择接口开始捕获，或打开 .pcap / .pcapng 文件。"
+        else:
+            self.state.setText("离线可用")
+            startup_hint = "没有可用的实时抓包接口。点击“打开文件”即可离线分析 PCAP / PCAPNG。"
+            self.start_btn.setToolTip(self.devices.toolTip())
+        self.foot = QLabel(startup_hint)
         self.foot.setTextFormat(Qt.TextFormat.PlainText)
         layout.addWidget(self.foot)
         self.pulse = QTimer(self)

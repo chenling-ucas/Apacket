@@ -144,7 +144,7 @@ def process_note(session, owner) -> Note:
         return Note(
             title,
             "当前没有与该进程匹配的 TCP 流。",
-            "进程归属取自本机 lsof 套接字快照。",
+            "进程归属取自抓包时的本机 TCP 连接表。",
         )
     summary = f"抓包期间，{streams} 条 TCP 流与这个本机进程匹配，共捕获 {frames} 帧。该进程的端点发出 {sent} 帧，收到 {received} 帧。"
     if internal:
@@ -152,7 +152,7 @@ def process_note(session, owner) -> Note:
             f"其中 {internal} 帧在这个进程自己的端点间传递，在收发两项中各计一次。"
         )
     evidence = (
-        "进程名和 PID 来自本机 lsof 套接字快照，通过两端的 IP 地址和端口与抓包匹配。"
+        "抓包时，本机 TCP 连接表记录了本地端点所属的 PID。程序用两端的 IP 地址和端口匹配抓到的 TCP 流。"
     )
     if example:
         summary += "\n" + example.text
@@ -170,7 +170,7 @@ def endpoint_note(session, sid, local_ep, owner) -> Note:
         f"本地端点发出 {observed.sent} 帧，收到 {observed.received} 帧。"
     )
     evidence = (
-        f"本机 lsof 套接字快照将本地端点 {_address(local_ep)} 和上述对端匹配到该进程。"
+        f"在抓包时的本机 TCP 连接表中，本地端点 {_address(local_ep)} 与上述对端之间的连接属于该进程。"
     )
     if observed.opening:
         summary += "\n" + observed.opening.text

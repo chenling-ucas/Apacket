@@ -5,10 +5,11 @@ import socket
 import struct
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 from PySide6.QtWidgets import QApplication
-from packetscope.capture import Frame, read_file
+from packetscope.capture import CaptureError, Frame, read_file
 from packetscope.gui import Window
 from packetscope.session import Session, display_predicate
 
@@ -50,6 +51,27 @@ class DesktopTests(unittest.TestCase):
     def tearDown(self):
         self.w.unsaved = False
         self.w.close()
+
+    def test_driverless_startup_opens_example_and_selects_a_tcp_stream(self):
+        sample = Path(__file__).resolve().parents[1] / "examples" / "loopback-demo.pcap"
+        # On Linux the normal application can still capture via the system dumpcap.
+        with patch("packetscope.capture._library", side_effect=CaptureError("无系统抓包驱动")), \
+                patch("packetscope.linux_dumpcap.HELPER", sample.parent / "missing-dumpcap"):
+            w = Window()
+            try:
+                w.pulse.stop()
+                self.assertFalse(w.start_btn.isEnabled())
+                self.assertTrue(w.open_btn.isEnabled())
+                self.assertIn("离线", w.state.text())
+                with patch.object(w, "launch_task", lambda f, *args: f(*args)):
+                    w.load(str(sample))
+                w.poll()
+                self.assertEqual(w.mode, "idle")
+                stream = w.model.s.analysis.streams[0]
+                w.select_number(stream.frames[0])
+                self.assertTrue(w.stream_btn.isEnabled())
+            finally:
+                w.close()
 
     def test_live_dns_response_updates_selected_query_and_jump(self):
         self.w.events.put(("batch", [dns_frame()]))

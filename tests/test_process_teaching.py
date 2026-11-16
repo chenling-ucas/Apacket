@@ -114,7 +114,8 @@ class ProcessTeachingTests(unittest.TestCase):
         self.assertIn("对端向本地端点发送了 TLS Client Hello", note.explanation)
         self.assertIn("class.example", note.explanation)
         self.assertIn("流 #1 第 2 帧", note.evidence)
-        self.assertIn("lsof", note.evidence)
+        self.assertIn("本机 TCP 连接表", note.evidence)
+        self.assertIn("两端的 IP 地址和端口", note.evidence)
 
     def test_midstream_ack_only_provides_a_concrete_action(self):
         s = Session()

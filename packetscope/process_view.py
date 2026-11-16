@@ -29,7 +29,7 @@ class ProcessDialog(QDialog):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(18, 16, 18, 14)
         layout.addWidget(
-            QLabel("单击进程或连接查看教学批注，双击连接打开 TCP 时序图。")
+            QLabel("单击查看进程或连接详情，双击连接打开 TCP 时序图。")
         )
         splitter = QSplitter(Qt.Orientation.Horizontal)
         splitter.setChildrenCollapsible(False)

@@ -1,5 +1,7 @@
 import os
+import shutil
 import socket
+import subprocess
 import sys
 import unittest
 from types import SimpleNamespace
@@ -51,18 +53,48 @@ class FlowTests(unittest.TestCase):
         self.assertEqual(a.meta[4].dns_peer, 1)
         self.assertEqual(a.meta[2].dns_ms, 250)
 
-    @unittest.skipUnless(sys.platform == 'darwin', '本机 TCP 进程采样为 macOS 验收')
-    def test_loopback_socket_ownership(self):
-        with socket.socket() as listener, socket.socket() as client:
-            listener.bind(('127.0.0.1', 0))
+
+@unittest.skipUnless(sys.platform in ('darwin', 'win32') or
+                     (sys.platform.startswith('linux') and shutil.which('lsof')),
+                     '需要 Windows TCP 连接表或本机 lsof')
+class LiveOwnershipTests(unittest.TestCase):
+    def check_loopback(self, family, host):
+        # A separate client makes a reversed (local, peer) mapping detectable.
+        client_code = '''
+import os, socket, sys
+with socket.create_connection((sys.argv[1], int(sys.argv[2])), timeout=15) as client:
+    client.sendall(os.getpid().to_bytes(4, 'big'))
+    client.recv(1)
+'''
+        with socket.socket(family, socket.SOCK_STREAM) as listener:
+            listener.settimeout(10)
+            listener.bind((host, 0))
             listener.listen(1)
-            client.connect(listener.getsockname())
-            server, _ = listener.accept()
-            with server:
-                endpoints = client.getsockname(), client.getpeername()
-                live = snapshot()
-                self.assertIn(f'PID {os.getpid()}', live[endpoints])
-                self.assertIn(f'PID {os.getpid()}', live[endpoints[::-1]])
+            port = str(listener.getsockname()[1])
+            with subprocess.Popen([sys.executable, '-c', client_code, host, port]) as child:
+                try:
+                    server, _ = listener.accept()
+                    with server:
+                        server.settimeout(10)
+                        with server.makefile('rb') as stream:
+                            data = stream.read(4)
+                        self.assertEqual(len(data), 4)
+                        client_pid = int.from_bytes(data, 'big')
+                        endpoints = server.getsockname()[:2], server.getpeername()[:2]
+                        live = snapshot()
+                        self.assertRegex(live[endpoints], rf'\(PID {os.getpid()}\)$')
+                        self.assertRegex(live[endpoints[::-1]], rf'\(PID {client_pid}\)$')
+                    self.assertEqual(child.wait(timeout=5), 0)
+                finally:
+                    if child.poll() is None:
+                        child.kill()
+
+    def test_ipv4_loopback_socket_ownership(self):
+        self.check_loopback(socket.AF_INET, '127.0.0.1')
+
+    @unittest.skipUnless(socket.has_ipv6, '本机未启用 IPv6')
+    def test_ipv6_loopback_socket_ownership(self):
+        self.check_loopback(socket.AF_INET6, '::1')
 
 
 if __name__ == '__main__':
