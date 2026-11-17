@@ -1,7 +1,7 @@
 import struct
 import unittest
 
-from packetscope.decode import decode
+from apacket.decode import decode
 
 
 def ipv4(proto, content, options=b"", extra=b"", frag=0):

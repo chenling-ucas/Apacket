@@ -1,8 +1,8 @@
 import unittest
 
-from packetscope.decode import Packet
-from packetscope.process_teaching import endpoint_note, process_note
-from packetscope.session import Record, Session
+from apacket.decode import Packet
+from apacket.process_teaching import endpoint_note, process_note
+from apacket.session import Record, Session
 
 CLIENT = ("127.0.0.1", 53000)
 SERVER = ("127.0.0.1", 443)

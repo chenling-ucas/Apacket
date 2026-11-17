@@ -4,7 +4,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from packetscope.capture import CaptureError, Frame, read_file, save_file
+from apacket.capture import CaptureError, Frame, read_file, save_file
 
 
 def block(kind, payload):

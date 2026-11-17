@@ -1,4 +1,4 @@
-"""Exercise PacketScope's desktop capture and process views with two local TCP peers.
+"""Exercise Apacket's desktop capture and process views with two local TCP peers.
 
 Use the Python selected by the release launcher. The harness can live outside the
 ZIP: pass --project to select the extracted, unmodified application directory.
@@ -128,14 +128,14 @@ def desktop(args, result):
     from PySide6.QtCore import Qt, QTimer
     from PySide6.QtTest import QTest
     from PySide6.QtWidgets import QApplication, QLabel, QMessageBox
-    from packetscope import capture, gui
-    from packetscope.process_view import ProcessDialog
-    from packetscope.views import StreamDialog, endpoint
+    from apacket import capture, gui
+    from apacket.process_view import ProcessDialog
+    from apacket.views import StreamDialog, endpoint
 
-    check(Path(gui.__file__).resolve() == (args.project / "packetscope/gui.py").resolve(),
+    check(Path(gui.__file__).resolve() == (args.project / "apacket/gui.py").resolve(),
           "Imported application does not match --project")
     app = QApplication([sys.argv[0]])
-    app.setApplicationName("PacketScope")
+    app.setApplicationName("Apacket")
     app.setStyle("Fusion")
     app.setStyleSheet(gui.STYLE)
     result["qt_platform"] = app.platformName()
@@ -213,10 +213,10 @@ def desktop(args, result):
     check(device in devices, f"Loopback device absent: {devices}; {w.devices.toolTip()}")
     w.devices.setCurrentIndex(devices.index(device))
     result["device"] = device
-    marker = ("PacketScope-check-" + secrets.token_hex(12)).encode("ascii")
+    marker = ("Apacket-check-" + secrets.token_hex(12)).encode("ascii")
 
     try:
-        with tempfile.TemporaryDirectory(prefix="packetscope-live-") as temp:
+        with tempfile.TemporaryDirectory(prefix="apacket-live-") as temp:
             stop = Path(temp) / "stop"
             with start_peer("server", 0, marker, stop) as (server_pid, server_port):
                 rule = f"tcp and host {HOST} and port {server_port}"

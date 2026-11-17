@@ -15,18 +15,18 @@ case "$system_name" in
     Darwin)
         major="$(/usr/bin/sw_vers -productVersion | cut -d. -f1)"
         if [ "$major" -lt 13 ]; then echo "此版本的界面需要 macOS 13 或更新版本。" >&2; exit 1; fi
-        default_state="$HOME/Library/Application Support/PacketScope"
+        default_state="$HOME/Library/Application Support/Apacket"
         target="$arch-apple-darwin"
         ;;
     Linux)
-        default_state="${XDG_DATA_HOME:-$HOME/.local/share}/PacketScope"
+        default_state="${XDG_DATA_HOME:-$HOME/.local/share}/Apacket"
         target="$arch-unknown-linux-gnu"
         source "$script_dir/linux-desktop.sh"
         check_linux_platform
         ;;
     *) echo "此启动入口适用于 macOS 和 Linux。" >&2; exit 1 ;;
 esac
-state="${PACKETSCOPE_DATA_DIR:-$default_state}"
+state="${APACKET_DATA_DIR:-$default_state}"
 mkdir -p "$state"
 state="$(cd "$state" && pwd -P)"
 requirements="$project_dir/requirements.txt"
@@ -79,7 +79,7 @@ create_portable_venv() {
     runtime="$state/cpython-$version-$release-$target"
     if [ ! -x "$runtime/bin/python3" ]; then
         archive="cpython-$version%2B$release-$target-install_only_stripped.tar.gz"
-        echo "正在为 PacketScope 下载 Python ${version}…"
+        echo "正在为 Apacket 下载 Python ${version}…"
         download "https://github.com/astral-sh/python-build-standalone/releases/download/$release/$archive" "$work/python.tar.gz"
         if [ "$(sha256 "$work/python.tar.gz")" != "$digest" ]; then echo "Python 下载校验失败，请重新启动。" >&2; return 1; fi
         mkdir "$work/python"
@@ -96,7 +96,7 @@ prepare_runtime() {
     if ! can_create_venv "$venv_dir/bin/python" || ! "$venv_dir/bin/python" -I -m pip --version >/dev/null 2>&1; then
         create_system_venv || create_portable_venv
     fi
-    echo "正在安装 PacketScope 的界面依赖…"
+    echo "正在安装 Apacket 的界面依赖…"
     "$venv_dir/bin/python" -I -m pip --isolated install --force-reinstall --disable-pip-version-check --only-binary=:all: --index-url https://pypi.org/simple -r "$requirements"
     if ! ready "$venv_dir/bin/python"; then "$venv_dir/bin/python" -I -c 'from PySide6 import QtWidgets' || true; echo "无法载入已安装的 Qt 界面，请检查上方的安装信息。" >&2; return 1; fi
 }
@@ -121,8 +121,8 @@ if [ "${1:-}" = --check ]; then
     QT_QPA_PLATFORM=offscreen "$python" -c '
 import platform, sys
 from PySide6 import QtWidgets, __version__
-from packetscope import capture
-from packetscope.gui import Window
+from apacket import capture
+from apacket.gui import Window
 app = QtWidgets.QApplication([])
 print(f"Python {platform.python_version()} / Qt for Python {__version__} / Qt 平台 {app.platformName()}")
 print(f"Python 解释器：{sys.executable}")
@@ -137,13 +137,13 @@ else:
 fi
 if [ "$system_name" = Darwin ] && [ "$#" -eq 0 ] && [ -t 0 ] && [ ! -r /dev/bpf0 ]; then
     source "$script_dir/macos-capture.sh"
-    offer_mac_capture || echo "本次继续打开 PacketScope。可打开已有的抓包文件。" >&2
+    offer_mac_capture || echo "本次继续打开 Apacket。可打开已有的抓包文件。" >&2
 fi
 if [ "$system_name" = Linux ] && [ -z "${DISPLAY:-}${WAYLAND_DISPLAY:-}${QT_QPA_PLATFORM:-}" ]; then
-    echo "请在图形桌面中启动 PacketScope。终端环境可运行 bash Start-PacketScope-Linux.sh --check。" >&2
+    echo "请在图形桌面中启动 Apacket。终端环境可运行 bash Start-Apacket-Linux.sh --check。" >&2
     exit 1
 fi
 if [ "$system_name" = Linux ] && [ "$#" -eq 0 ] && [ -t 0 ]; then
-    offer_linux_capture || echo "本次继续打开 PacketScope。可打开已有的抓包文件。" >&2
+    offer_linux_capture || echo "本次继续打开 Apacket。可打开已有的抓包文件。" >&2
 fi
-exec "$python" -m packetscope "$@"
+exec "$python" -m apacket "$@"

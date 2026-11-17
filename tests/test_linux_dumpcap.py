@@ -8,7 +8,7 @@ import time
 import unittest
 from unittest.mock import Mock, patch
 
-from packetscope import capture, linux_dumpcap
+from apacket import capture, linux_dumpcap
 
 
 @unittest.skipIf(sys.platform == 'win32', 'Linux helper uses Unix subprocess pipes')

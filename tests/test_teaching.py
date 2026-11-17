@@ -1,9 +1,9 @@
 import struct
 import unittest
 
-from packetscope.capture import Frame
-from packetscope.session import Session
-from packetscope.teaching import StreamLesson
+from apacket.capture import Frame
+from apacket.session import Session
+from apacket.teaching import StreamLesson
 
 
 def add(session, seq, ack, flags=0x10, data=b"", *, reverse=False, missing=0, port=443):

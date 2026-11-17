@@ -2,7 +2,7 @@
 setlocal DisableDelayedExpansion
 pushd "%~dp0" || exit /b 1
 if not exist "bootstrap-windows.ps1" (
-    echo Extract the complete PacketScope ZIP, then open Start-PacketScope.cmd.
+    echo Extract the complete Apacket ZIP, then open Start-Apacket.cmd.
     pause
     exit /b 1
 )

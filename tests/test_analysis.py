@@ -6,8 +6,8 @@ import sys
 import unittest
 from types import SimpleNamespace
 
-from packetscope.analysis import Analyzer
-from packetscope.processes import snapshot
+from apacket.analysis import Analyzer
+from apacket.processes import snapshot
 
 
 def pkt(src='127.0.0.1', dst='127.0.0.1', sport=53000, dport=8000, **kwargs):

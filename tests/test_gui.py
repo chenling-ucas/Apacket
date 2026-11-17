@@ -9,9 +9,9 @@ from unittest.mock import patch
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 from PySide6.QtWidgets import QApplication
-from packetscope.capture import CaptureError, Frame, read_file
-from packetscope.gui import Window
-from packetscope.session import Session, display_predicate
+from apacket.capture import CaptureError, Frame, read_file
+from apacket.gui import Window
+from apacket.session import Session, display_predicate
 
 
 def dns_frame(response=False):
@@ -55,8 +55,8 @@ class DesktopTests(unittest.TestCase):
     def test_driverless_startup_opens_example_and_selects_a_tcp_stream(self):
         sample = Path(__file__).resolve().parents[1] / "examples" / "loopback-demo.pcap"
         # On Linux the normal application can still capture via the system dumpcap.
-        with patch("packetscope.capture._library", side_effect=CaptureError("无系统抓包驱动")), \
-                patch("packetscope.linux_dumpcap.HELPER", sample.parent / "missing-dumpcap"):
+        with patch("apacket.capture._library", side_effect=CaptureError("无系统抓包驱动")), \
+                patch("apacket.linux_dumpcap.HELPER", sample.parent / "missing-dumpcap"):
             w = Window()
             try:
                 w.pulse.stop()

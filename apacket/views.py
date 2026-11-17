@@ -185,7 +185,7 @@ class FlowDiagram(QGraphicsView):
 class StreamDialog(QDialog):
     def __init__(self, session, sid, parent=None, *, initial_frame=None):
         super().__init__(parent)
-        self.setWindowTitle(f"TCP 流 #{sid} · PacketScope")
+        self.setWindowTitle(f"TCP 流 #{sid} · Apacket")
         self.resize(1060, 620)
         stream = session.analysis.streams[sid]
         self.frames = list(stream.frames)

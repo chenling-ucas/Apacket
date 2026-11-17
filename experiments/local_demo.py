@@ -15,14 +15,14 @@ import time
 
 
 LOCALHOST = '127.0.0.1'
-BODY = b'PacketScope local HTTP demonstration\n'
+BODY = b'Apacket local HTTP demonstration run\n'
 
 
 def send_echoes(identifier: int, nonce: bytes) -> None:
     """Darwin permits unprivileged ICMP echo datagram sockets."""
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_ICMP) as echo:
         for seq in (1, 2, 3):
-            payload = struct.pack('!BBHHH', 8, 0, 0, identifier, seq) + nonce + b'PacketScope!'
+            payload = struct.pack('!BBHHH', 8, 0, 0, identifier, seq) + nonce + b'Apacket ping'
             words = struct.unpack(f'!{len(payload) // 2}H', payload)
             value = sum(words)
             while value >> 16:

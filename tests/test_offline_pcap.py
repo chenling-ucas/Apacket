@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from packetscope import capture
+from apacket import capture
 
 
 def block(order, kind, body):

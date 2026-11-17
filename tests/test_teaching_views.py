@@ -10,11 +10,11 @@ from PySide6.QtCore import Qt
 from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QApplication
 
-from packetscope.capture import read_file
-from packetscope.gui import Window
-from packetscope.process_view import ProcessDialog
-from packetscope.session import Session
-from packetscope.views import StreamDialog
+from apacket.capture import read_file
+from apacket.gui import Window
+from apacket.process_view import ProcessDialog
+from apacket.session import Session
+from apacket.views import StreamDialog
 
 
 class TeachingViewTests(unittest.TestCase):

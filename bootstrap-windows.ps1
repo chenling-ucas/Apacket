@@ -94,7 +94,7 @@ function Get-AppPython($Root, $Arch, $Work) {
         } finally { $ErrorActionPreference = $oldPreference }
     }
     $base = Get-BasePython $Root $Arch $Work
-    Write-Host '正在配置 PacketScope 的 Python 环境。'
+    Write-Host '正在配置 Apacket 的 Python 环境。'
     & $base -I -m venv $venv | Out-Host
     if ($LASTEXITCODE -ne 0) { throw '创建 Python 环境失败，请检查磁盘空间后再打开启动器。' }
     $indexes = @(
@@ -130,7 +130,7 @@ function Initialize-Capture($Work) {
     Add-Type -AssemblyName System.Windows.Forms
     $answer = [Windows.Forms.MessageBox]::Show(
         '实时抓包需要 Npcap。“是”将下载并打开官方安装向导，可能需要 Windows 管理员确认。“否”直接打开离线分析。',
-        'PacketScope', 'YesNo', 'Question')
+        'Apacket', 'YesNo', 'Question')
     if ($answer -ne 'Yes') { return }
     try {
         $installer = Join-Path $Work 'npcap-1.90.exe'
@@ -157,9 +157,9 @@ try {
     $build = (Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion').CurrentBuildNumber
     if ([int]$build -lt 17763) { throw '此版本需要 Windows 10 1809 或更新版本。' }
     $checkOnly = $args.Count -eq 1 -and $args[0] -eq '--check'
-    $root = Join-Path $env:LOCALAPPDATA 'PacketScope'
+    $root = Join-Path $env:LOCALAPPDATA 'Apacket'
     [IO.Directory]::CreateDirectory($root) | Out-Null
-    $work = Join-Path ([IO.Path]::GetTempPath()) ('PacketScope-' + [guid]::NewGuid().ToString('N'))
+    $work = Join-Path ([IO.Path]::GetTempPath()) ('Apacket-' + [guid]::NewGuid().ToString('N'))
     [IO.Directory]::CreateDirectory($work) | Out-Null
     # FileShare.None releases automatically if setup is interrupted.
     $timer = [Diagnostics.Stopwatch]::StartNew()
@@ -180,7 +180,7 @@ try {
         Write-Host "Python: $python"
         $result = 0
     } else {
-        & $python -E -s -m packetscope @args
+        & $python -E -s -m apacket @args
         $result = $LASTEXITCODE
     }
 } catch {

@@ -304,7 +304,7 @@ def save_file(path: str | os.PathLike, frames: Iterable[Frame]) -> None:
         raise CaptureError('没有可保存的数据包。')
     records = _records(chain((first,), frames), first.linktype)
     target = Path(path)
-    with tempfile.NamedTemporaryFile(dir=target.parent, prefix='.packetscope-', delete=False) as tmp:
+    with tempfile.NamedTemporaryFile(dir=target.parent, prefix='.apacket-', delete=False) as tmp:
         temporary = Path(tmp.name)
     try:
         try:

@@ -10,9 +10,9 @@ import sys
 import time
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from packetscope.capture import open_live, read_file, save_file
-from packetscope.processes import snapshot
-from packetscope.session import Session, display_predicate
+from apacket.capture import open_live, read_file, save_file
+from apacket.processes import snapshot
+from apacket.session import Session, display_predicate
 from experiments.local_demo import LOCALHOST, curl_request, demo_server, send_echoes, split_request
 
 
@@ -114,7 +114,7 @@ def check_live(save_demo: Path | None) -> dict:
 
 
 def main():
-    parser = argparse.ArgumentParser(description='PacketScope 实验 1A 验收（实时部分使用 macOS lo0）')
+    parser = argparse.ArgumentParser(description='Apacket 实验 1A 验收（实时部分使用 macOS lo0）')
     parser.add_argument('--sample', type=Path, help='此前分析的 192 帧参考样本 1.pcapng')
     parser.add_argument('--live', action='store_true', help='生成并捕获本机 ICMP、HTTP 与 curl 流量')
     parser.add_argument('--save-demo', type=Path, help='将本次生成的回环演示流量导出为经典 pcap，隐含 --live')

@@ -1,4 +1,4 @@
-"""Run PacketScope with an optional capture-file path."""
+"""Run Apacket with an optional capture-file path."""
 
 import sys
 from PySide6.QtCore import QTimer
@@ -8,7 +8,7 @@ from .gui import Window, STYLE
 
 def main():
     app = QApplication(sys.argv)
-    app.setApplicationName("PacketScope")
+    app.setApplicationName("Apacket")
     app.setStyle("Fusion")
     app.setStyleSheet(STYLE)
     window = Window()

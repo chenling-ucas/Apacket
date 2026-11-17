@@ -6,7 +6,7 @@ import struct
 import unittest
 from unittest.mock import Mock, patch
 
-from packetscope import windows_processes
+from apacket import windows_processes
 
 
 def tcp_row(local, peer, pid, state=5, scope=0):

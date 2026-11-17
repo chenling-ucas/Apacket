@@ -169,7 +169,7 @@ def button(text, callback, primary=False):
 class Window(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("PacketScope · 网络嗅探器")
+        self.setWindowTitle("Apacket · 网络嗅探器")
         self.resize(1240, 810)
         self.model = Rows()
         self.proxy = Filter(self.model)
@@ -189,7 +189,7 @@ class Window(QMainWindow):
         layout.setContentsMargins(18, 12, 18, 12)
         layout.setSpacing(8)
         head = QHBoxLayout()
-        logo = QLabel("PacketScope")
+        logo = QLabel("Apacket")
         logo.setObjectName("logo")
         head.addWidget(logo)
         head.addWidget(QLabel("网络嗅探器"))
